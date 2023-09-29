@@ -13,7 +13,7 @@ signed main()
 {
     ios::sync_with_stdio(0), cin.tie(0);
 
-    // Partial result: 40 points
+    // Partial result: 60 points
 
     int n, s, t;
     cin >> n >> s >> t;
@@ -30,6 +30,44 @@ signed main()
         t = n - t + 1;
         s = n - s + 1;
         reverse(all(a));
+    }
+    if(n <= 2000){
+        s --;
+        t --;
+        vector<int> mins(n, 1e18);
+        mins[s] = 0;
+        queue<int> q;
+        q.push(s);
+        while(!q.empty()){
+            int x = q.front();
+            q.pop();
+            if(x >= s){
+                int mn = min(a[s], a[x]), sum = (x - s) * a[x] + mins[x];
+                for(int j = s - 1; j >= 0; j --){
+                    sum += mn;
+                    mn = min(mn, a[j]);
+                    if(mins[j] > sum){
+                        a[j] = min(a[j], mn);
+                        mins[j] = sum;
+                        q.push(j);
+                    }
+                }
+            }
+            if(x <= s){
+                int mn = min(a[s], a[x]), sum = (s - x) * a[x] + mins[x];
+                for(int j = s + 1; j <= t; j ++){
+                    sum += mn;
+                    mn = min(mn, a[j]);
+                    if(mins[j] > sum){
+                        a[j] = min(a[j], mn);
+                        mins[j] = sum;
+                        q.push(j);
+                    }
+                }
+            }
+        }
+        cout << mins[t];
+        return 0;
     }
     vector<int> index, p, cost, def;
     int s1 = 1, s2 = 1, s3 = 1;
