@@ -142,7 +142,6 @@ signed main()
     fastio
 
     // Partial result: 61 points
-    // I could solve 1, 2, 3, 4, 5 - th subtasks
 
     int tests = 1;
     while (tests --)
