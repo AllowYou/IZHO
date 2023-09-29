@@ -4,19 +4,79 @@ using namespace std;
 #define fs first
 #define ss second
 #define endl '\n'
+#define all(a) a.begin(), a.end()
 #define print(a)      \
     for (auto &x : a) \
-        cout << x.fs << ' ' << x.ss << endl;
+        cout << x << ' '; \
+    cout << endl;
+
+#define printmp(a)                           \
+    for (auto &x : a)                        \
+        cout << x.fs << ' ' << x.ss << endl; \
+    cout << endl;
+
+vector<int> a, b;
+vector<pair<int, int>> ans;
+map<vector<int>, bool> mp;
+
+bool dfs(vector<int> &a){
+    mp[a] = true;
+    vector<int> c;
+    for(int i = 0; i < a.size(); i ++){
+        int cnt1 = 0, cnt2 = 0;
+        c = a;
+        for(int j = i + 1; j < a.size(); j ++){
+            if(a[i] > a[j])
+                cnt1 ++;
+            else
+                cnt2 ++;
+            swap(c[j], c[j - 1]);
+            if(cnt1 == cnt2){
+                if(c == b){
+                    ans.push_back({i + 1, j - i});
+                    return true;
+                }
+                if(!mp[c] and dfs(c)){
+                    ans.push_back({i + 1, (j - i)});
+                    return true;
+                }
+            }
+        }
+    }
+    for(int i = 0; i < a.size(); i ++){
+        int cnt1 = 0, cnt2 = 0;
+        c = a;
+        for(int j = i - 1; j >= 0; j --){
+            if(a[i] > a[j])
+                cnt1 ++;
+            else
+                cnt2 ++;
+            swap(c[j], c[j + 1]);
+            if(cnt1 == cnt2){
+                if(c == b){
+                    ans.push_back({i + 1, j - i});
+                    return true;
+                }
+                if(!mp[c] and dfs(c)){
+                    ans.push_back({i + 1, j - i});
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
 
 int main()
 {
     ios::sync_with_stdio(0), cin.tie(0);
 
-    // Partial results: 9 points
+    // Partial results: 16 points
 
     int n, t;
     cin >> n >> t;
-    vector<int> a(n), b(n);
+    a.resize(n);
+    b.resize(n);
     bool flag = false;
     for (int i = 0; i < n; i++)
         cin >> a[i];
@@ -66,7 +126,7 @@ int main()
                 if (t == 2)
                 {
                     cout << ans.size() << endl;
-                    print(ans)
+                    printmp(ans)
                 }
                 return 0;
             }
@@ -80,7 +140,7 @@ int main()
             if (t == 2)
             {
                 cout << ans.size() << endl;
-                print(ans)
+                printmp(ans)
             }
             return 0;
         }
@@ -94,7 +154,7 @@ int main()
                 if (t == 2)
                 {
                     cout << ans.size() << endl;
-                    print(ans)
+                    printmp(ans)
                 }
                 return 0;
             }
@@ -108,7 +168,7 @@ int main()
             if (t == 2)
             {
                 cout << ans.size() << endl;
-                print(ans)
+                printmp(ans)
             }
             return 0;
         }
@@ -116,15 +176,15 @@ int main()
     }
     else
     {
-        if (a == b)
-        {
-            cout << "YES" << endl;
-            if (t == 2)
-            {
-                cout << 0 << endl;
-            }
-            return 0;
+        if(dfs(a))
+            cout << "YES";
+        else
+            cout << "NO";
+        cout << endl;
+        if(t == 2){
+            cout << ans.size() << endl;
+            reverse(all(ans));
+            printmp(ans)
         }
-        cout << "NO";
     }
 }
