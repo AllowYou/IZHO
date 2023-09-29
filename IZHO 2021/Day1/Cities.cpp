@@ -14,7 +14,6 @@ signed main()
     ios::sync_with_stdio(0), cin.tie(0);
 
     // Partial result: 40 points
-    // I could solve 1, 2, 3, 4 subtasks
 
     int n, s, t;
     cin >> n >> s >> t;
