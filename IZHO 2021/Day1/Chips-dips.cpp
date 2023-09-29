@@ -13,7 +13,6 @@ int main()
     ios::sync_with_stdio(0), cin.tie(0);
 
     // Partial results: 9 points
-    // I count solve only 3 subtask
 
     int n, t;
     cin >> n >> t;
