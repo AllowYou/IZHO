@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+#define ll long long
 #define int long long
 #define all(a) a.begin(), a.end()
 #define endl '\n'
@@ -9,153 +10,96 @@ using namespace std;
         cout << x << ' '; \
     cout << endl;
 
-signed main()
+struct Line
 {
-    ios::sync_with_stdio(0), cin.tie(0);
+    mutable ll k, m, p;
+    bool operator<(const Line &o) const { return k < o.k; }
+    bool operator<(ll x) const { return p < x; }
+};
 
-    // Partial result: 60 points
+struct LineContainer : multiset<Line, less<>>
+{
+    static const ll inf = LLONG_MAX;
+    ll div(ll a, ll b)
+    {
+        return a / b - ((a ^ b) < 0 && a % b);
+    }
+    bool isect(iterator x, iterator y)
+    {
+        if (y == end())
+            return x->p = inf, 0;
+        if (x->k == y->k)
+            x->p = x->m > y->m ? inf : -inf;
+        else
+            x->p = div(y->m - x->m, x->k - y->k);
+        return x->p >= y->p;
+    }
+    void add(ll k, ll m)
+    {
+        k = -k;
+        m = -m;
+        auto z = insert({k, m, 0}), y = z++, x = y;
+        while (isect(y, z))
+            z = erase(z);
+        if (x != begin() && isect(--x, y))
+            isect(x, y = erase(y));
+        while ((y = x) != begin() && (--x)->p >= y->p)
+            isect(x, erase(y));
+    }
+    ll query(ll x)
+    {
+        assert(!empty());
+        auto l = *lower_bound(x);
+        return -(l.k * x + l.m);
+    }
+};
 
+void solve()
+{
     int n, s, t;
     cin >> n >> s >> t;
     vector<int> a(n);
     for (int i = 0; i < n; i++)
         cin >> a[i];
-    if (s == t)
-    {
-        cout << 0;
-        return 0;
-    }
     if (s > t)
     {
         t = n - t + 1;
         s = n - s + 1;
         reverse(all(a));
     }
-    if(n <= 2000){
-        s --;
-        t --;
-        vector<int> mins(n, 1e18);
-        mins[s] = 0;
-        queue<int> q;
-        q.push(s);
-        while(!q.empty()){
-            int x = q.front();
-            q.pop();
-            if(x >= s){
-                int mn = min(a[s], a[x]), sum = (x - s) * a[x] + mins[x];
-                for(int j = s - 1; j >= 0; j --){
-                    sum += mn;
-                    mn = min(mn, a[j]);
-                    if(mins[j] > sum){
-                        a[j] = min(a[j], mn);
-                        mins[j] = sum;
-                        q.push(j);
-                    }
-                }
-            }
-            if(x <= s){
-                int mn = min(a[s], a[x]), sum = (s - x) * a[x] + mins[x];
-                for(int j = s + 1; j <= t; j ++){
-                    sum += mn;
-                    mn = min(mn, a[j]);
-                    if(mins[j] > sum){
-                        a[j] = min(a[j], mn);
-                        mins[j] = sum;
-                        q.push(j);
-                    }
-                }
-            }
-        }
-        cout << mins[t];
-        return 0;
-    }
-    vector<int> index, p, cost, def;
-    int s1 = 1, s2 = 1, s3 = 1;
-    t--;
     s--;
-    p.push_back(a[s]);
-    index.push_back(s);
-    cost.push_back(0);
-    def.push_back(0);
-    int x = 0;
-    for (int i = s + 1; i <= t; i++)
+    t--;
+    LineContainer c1, c2;
+    c1.add(-a[s], s * a[s]);
+    c2.add(a[s], -s * a[s]);
+    int l = s, r = s;
+    while (true)
     {
-        cost[s1 - 1] += p[s2 - 1];
-        x += p[s2 - 1];
-        if (i < t and p[s2 - 1] > a[i])
-            p.push_back(a[i]), cost.push_back(0), index.push_back(i), def.push_back(x + (i - s) * a[i]), s1++, s2++, s3++;
+        if (r == t)
+        {
+            cout << c2.query(r);
+            return;
+        }
+        int x = c1.query(l - 1), y = c2.query(r + 1);
+        if (l != 0 and x < y){
+            c1.add(-a[l - 1], x + (l - 1) * a[l - 1]);
+            c2.add(a[l - 1], x - (l - 1) * a[l - 1]);
+            l --;
+        }
+        else{
+            c1.add(-a[r + 1], y + (r + 1) * a[r + 1]);
+            c2.add(a[r + 1], y - (r + 1) * a[r + 1]);
+            r++;
+        }
     }
-    int sum = 0;
-    for (int i = s1 - 1; i >= 0; i--)
-    {
-        sum += cost[i];
-        cost[i] = sum;
-    }
-    int ans = sum, u = 0, mn = 0;
-    x = a[s];
-    for (int i = s - 1; i >= 0; i--)
-    {
-        u += x;
-        x = min(x, a[i]);
-        if (p[s2 - 1] > x)
-        {
-            ans = min(ans, u + x * (t - i));
-            continue;
-        }
-        int l = 0, r = s2 - 1;
-        while (l < r)
-        {
-            int m = (l + r + 1) >> 1;
-            if (p[m] >= x)
-                l = m;
-            else
-                r = m - 1;
-        }
-        ans = min(ans, u + x * (index[l + 1] - i) + cost[l + 1]);
-    }
-    reverse(all(cost));
-    reverse(all(p));
-    reverse(all(index));
-    reverse(all(def));
-    x = a[s];
-    for (int i = s - 1; i >= 0; i--)
-    {
-        mn += x;
-        x = min(x, a[i]);
-        while (def.size() >= 2 and def[def.size() - 2] + (s - i) * p[p.size() - 2] <= mn)
-        {
-            def.pop_back();
-            p.pop_back();
-            cost.pop_back();
-            index.pop_back();
-            mn = def[def.size() - 1] + (s - i) * p[p.size() - 1];
-        }
-        while (def.size() >= 2 and p[p.size() - 1] > a[i] and p[p.size() - 2] >= a[i])
-        {
-            p[p.size() - 2] = p[p.size() - 1];
-            def[p.size() - 2] = def[p.size() - 1];
-            cost[p.size() - 2] += cost[p.size() - 1];
-            index[p.size() - 2] = index[p.size() - 1];
-            def.pop_back();
-            p.pop_back();
-            cost.pop_back();
-            index.pop_back();
-        }
-        if (p[0] > x)
-        {
-            ans = min(ans, mn + x * (t - i));
-            continue;
-        }
-        int l = 0, r = p.size() - 1;
-        while (l < r)
-        {
-            int m = (l + r) >> 1;
-            if (p[m] < x)
-                l = m + 1;
-            else
-                r = m;
-        }
-        ans = min(ans, mn + x * (index[l] - i) + cost[l]);
-    }
-    cout << ans;
+}
+
+signed main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    // Perfect result: 100 points
+    
+    solve();
 }
